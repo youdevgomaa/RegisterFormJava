@@ -6,6 +6,15 @@ package register;
 
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  *
@@ -17,7 +26,10 @@ public class Register extends javax.swing.JFrame {
      * Creates new form Register
      */
     DefaultTableModel dtm;
-    
+    Connection con;
+    ArrayList<Integer> depts_ids = new ArrayList<>();
+    ArrayList<Integer> emps_ids = new ArrayList<>();
+
     public Register() {
         initComponents();
         this.setLocationRelativeTo(null);
@@ -26,6 +38,46 @@ public class Register extends javax.swing.JFrame {
         dtm.addColumn("Salary");
         dtm.addColumn("Gender");
         dtm.addColumn("DPName");
+
+        try {
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/Company", "root", "Gbgbgbgb12");
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Connnection Failed");
+        }
+        fillComboBox();
+        fillTable();
+        table.setModel(dtm);
+    }
+
+    private void fillComboBox() {
+        try {
+            PreparedStatement stmt = con.prepareStatement("select dept_id , dept_name from department");
+            ResultSet res = stmt.executeQuery();
+            while (res.next()) {
+                depts_ids.add(res.getInt(1));
+                department_name.addItem(res.getString(2));
+            }
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Connnection Failed");
+        }
+
+    }
+
+    private void fillTable() {
+        dtm.setRowCount(0);
+        try {
+            PreparedStatement stmt = con.prepareStatement("select employee.emp_id,employee.emp_name,employee.emp_salary,employee.gender,department.dept_name from employee,department where employee.dept_id=department.dept_id");
+            ResultSet res = stmt.executeQuery();
+
+            while (res.next()) {
+                emps_ids.add(res.getInt(1));
+                dtm.addRow(new Object[]{res.getString(2), res.getDouble(3), res.getString(4), res.getString(5)});
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Connnection Failed");
+        }
+
     }
 
     /**
@@ -53,6 +105,10 @@ public class Register extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Employee Register Form");
@@ -97,7 +153,6 @@ public class Register extends javax.swing.JFrame {
         buttonGroup1.add(female);
         female.setText("Female");
 
-        department_name.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "IT", "HR", "SD", " " }));
         department_name.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 204, 204), 2, true));
 
         table.setModel(new javax.swing.table.DefaultTableModel(
@@ -108,6 +163,11 @@ public class Register extends javax.swing.JFrame {
 
             }
         ));
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(table);
 
         jButton1.setText("Add");
@@ -117,45 +177,84 @@ public class Register extends javax.swing.JFrame {
             }
         });
 
+        jLabel5.setFont(new java.awt.Font("Kefa", 1, 48)); // NOI18N
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel5.setText("COMPANY");
+        jLabel5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+
+        jButton2.setText("Edit");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Delete");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("next");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(male)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(female))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(department_name, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(name, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(salary, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addComponent(jButton2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jButton3)
+                                .addGap(130, 130, 130)
+                                .addComponent(jButton1))))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addGap(42, 42, 42)
+                                .addComponent(male, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(female, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(department_name, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(salary)
+                                    .addComponent(name)))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                        .addComponent(jButton4)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(8, 8, 8)
+                .addContainerGap()
+                .addComponent(jButton4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5)
+                .addGap(18, 18, 18)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(name, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -175,7 +274,10 @@ public class Register extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
-                .addComponent(jButton1)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(jButton2)
+                    .addComponent(jButton3))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -232,45 +334,140 @@ public class Register extends javax.swing.JFrame {
     }//GEN-LAST:event_maleActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
 
-        if (name.getText().length() == 0) {
-            JOptionPane.showMessageDialog(this, "Please Enter Employee Name",
-                    "ERROR", JOptionPane.ERROR_MESSAGE);
-            return;
+            if (name.getText().length() == 0) {
+                JOptionPane.showMessageDialog(this, "Please Enter Employee Name",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (salary.getText().length() == 0) {
+                JOptionPane.showMessageDialog(this, "Please Enter Employee Salary",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!male.isSelected() && !female.isSelected()) {
+                JOptionPane.showMessageDialog(this, "Please Enter Employee Gender", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (department_name.getSelectedItem().toString().length() == 0) {
+                JOptionPane.showMessageDialog(this, "Please Enter Department Name", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String empName = name.getText();
+            String empSalary = salary.getText();
+            String empGender;
+            if (male.isSelected()) {
+                empGender = "Male";
+            } else {
+                empGender = "Female";
+            }
+            String deptName = department_name.getSelectedItem().toString();
+
+            PreparedStatement stmt = con.prepareStatement("insert into employee (emp_name,emp_salary,dept_id,gender) values (?,?,?,?)");
+            stmt.setString(1, empName);
+            stmt.setDouble(2, Double.parseDouble(empSalary));
+            stmt.setInt(3, depts_ids.get(department_name.getSelectedIndex()));
+            stmt.setString(4, empGender);
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Added successflly");
+            fillTable();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Connnection Failed");
         }
-        if (salary.getText().length() == 0) {
-            JOptionPane.showMessageDialog(this, "Please Enter Employee Salary",
-                    "ERROR", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (!male.isSelected() && !female.isSelected()) {
-            JOptionPane.showMessageDialog(this, "Please Enter Employee Gender", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (department_name.getSelectedItem().toString().length() == 0) {
-            JOptionPane.showMessageDialog(this, "Please Enter Department Name", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        String empName = name.getText();
-        String empSalary = salary.getText();
-        String empGender;
-        if (male.isSelected()) {
-            empGender = "Male";
-        } else {
-            empGender = "Female";
-        }
-        String deptName = department_name.getSelectedItem().toString();
-        
-        dtm.addRow(new Object[]{empName, empSalary, empGender, deptName});
-        
-        table.setModel(dtm);
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void salaryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salaryActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_salaryActionPerformed
+
+    private void tableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableMouseClicked
+        // TODO add your handling code here:
+
+        name.setText((String) table.getValueAt(table.getSelectedRow(), 0));
+        salary.setText(table.getValueAt(table.getSelectedRow(), 1).toString());
+        String gender = table.getValueAt(table.getSelectedRow(), 2).toString();
+
+        if (gender.compareToIgnoreCase("Male") == 0) {
+            male.setSelected(true);
+        } else {
+            female.setSelected(true);
+        }
+        department_name.setSelectedItem(table.getValueAt(table.getSelectedRow(), 3));
+
+
+    }//GEN-LAST:event_tableMouseClicked
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+
+            if (name.getText().length() == 0) {
+                JOptionPane.showMessageDialog(this, "Please Enter Employee Name",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (salary.getText().length() == 0) {
+                JOptionPane.showMessageDialog(this, "Please Enter Employee Salary",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!male.isSelected() && !female.isSelected()) {
+                JOptionPane.showMessageDialog(this, "Please Enter Employee Gender", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (department_name.getSelectedItem().toString().length() == 0) {
+                JOptionPane.showMessageDialog(this, "Please Enter Department Name", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String empName = name.getText();
+            String empSalary = salary.getText();
+            String empGender;
+            if (male.isSelected()) {
+                empGender = "Male";
+            } else {
+                empGender = "Female";
+            }
+            String deptName = department_name.getSelectedItem().toString();
+
+            PreparedStatement stmt = con.prepareStatement("update  employee set emp_name=? , emp_salary=? , dept_id = ?,gender =? where emp_id=?");
+
+            stmt.setString(1, empName);
+            stmt.setDouble(2, Double.parseDouble(empSalary));
+            stmt.setInt(3, depts_ids.get(department_name.getSelectedIndex()));
+            stmt.setString(4, empGender);
+            stmt.setInt(5, emps_ids.get(table.getSelectedRow()));
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Updated successflly");
+            fillTable();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Connnection Failed");
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+//        System.out.println(emps_ids.get(table.getSelectedRow()));
+        try {
+            PreparedStatement stmt = con.prepareStatement("delete from employee where emp_id=?");
+            stmt.setInt(1,emps_ids.get(table.getSelectedRow()));
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Deleted successflly");
+            fillTable();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Connnection Failed");
+        }
+
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+        new Next().setVisible(true);
+    }//GEN-LAST:event_jButton4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -312,10 +509,14 @@ public class Register extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> department_name;
     private javax.swing.JRadioButton female;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
